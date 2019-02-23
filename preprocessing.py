@@ -78,7 +78,7 @@ print(tsne_results.shape)
 
 plt.scatter(tsne_results[:, 0], tsne_results[:, 1])
 for i, word in enumerate(words):
-	plt.annotate(word, xy=(tsne_results[i, 0], tsne_results[i, 1]))
+    plt.annotate(word, xy=(tsne_results[i, 0], tsne_results[i, 1]))
 plt.show()
 
 

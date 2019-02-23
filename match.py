@@ -4,6 +4,9 @@ import numpy as np
 
 import warnings
 
+##### script for matching tweet.csv with list of words ####
+
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 data = pd.read_csv('data_lst_processed.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
