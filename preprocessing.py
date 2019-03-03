@@ -9,13 +9,13 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from sklearn import cluster
 from sklearn import metrics
-import numpy as np
+
 
 data = pd.read_csv('tweets.csv')
 data['text'] = data['text'].astype(str)
 data_copy = data
 
-# lower, split
+# lower, split, remove stopwords, remove special characters, tokenize
 def preprocessing(data):
     """
     Delete stopwords from NLTK and manual list of stopwords
@@ -40,7 +40,6 @@ def preprocessing(data):
     # tokenize
     tokenizer = RegexpTokenizer(r'\w+')
     data['text'] = data['text'].apply(lambda x: [tokenizer.tokenize(item) for item in x])
-
 
     data.columns = ['ID', 'user_screen_name', 'in_reply_to_screen_name', 'text', 'retweeted_screen_name', 'party']
     data = data.drop(['ID'], axis=1)
@@ -70,6 +69,13 @@ def bagofwords(data):
     return bag
 
 def clustering(data, number):
+    """
+    This function does the clustering and returns some measures for the goodness of fit
+
+    :param data: input data
+    :param number: number of clusters
+    :return: assigned clusters, kmeans score, silhouette score
+    """
 
     kmeans = cluster.KMeans(n_clusters=number, init='k-means++', max_iter=100, n_init=1)
     assigned_clusters = kmeans.fit(data)
@@ -91,22 +97,47 @@ words = list(model.wv.vocab)
 
 X = model[model.wv.vocab]
 
+def grid_search():
+    results = []
+    for run in range(0, 5):
+        for n in range(2, 4):
+            for p in range(5, 50, 5):
+                for l in range(10, 1000, 50):
+                    tsne = TSNE(n_components=n, perplexity=p, learning_rate=l)
+                    tsne_results = tsne.fit_transform(X)
+                    for k in range(5, 200, 10):
+                        assigned_clusters, score, silhouette_score = clustering(X, k)
+                        #print(" number of components", n, "perplexity", p, "cluster", k, "learning rate", l, "score", score, "silhouette", silhouette_score)
+                        results.append([run, n, p, k, l, score, silhouette_score])
+                print(results)
+    results_pd = pd.DataFrame(results)
+    results_pd.columns = ['run', 'no_components', 'perplexity', 'cluster', 'learning', 'score', 'silhouette']
+    print(results_pd)
+    #results_pd.to_csv('grid_results.csv', header=True, sep=';')
+    pass
 
-for n in range(2, 3):
-    for p in range(5, 50, 5):
-        for l in range(10, 100, 10):
-            tsne = TSNE(n_components=n, perplexity=p, learning_rate=l)
-            tsne_results = tsne.fit_transform(X)
-            for k in range(10, 20):
-                assigned_clusters, score, silhouette_score = clustering(X, k)
-                print(" number of components", n, "perplexity", p, "cluster", k, "learning rate", l, "score", score, "silhouette", silhouette_score)
+def best_para():
+    results = pd.read_csv('grid_results.csv', delimiter=';')
+    results.drop(['score'], axis=1, inplace=True)
+    results.rename(columns={'Unnamed: 0': 'id'}, inplace=True)
 
-#  number of components 2 perplexity 10 cluster 15 learning rate 90 score -0.3707258 silhouette 0.0008933469
+    # for each run, get the parameters with lowest silhouette score y
+    df = results.groupby(['no_components', 'perplexity', 'cluster', 'learning']).mean()
+    best = df.sort_values('silhouette').head(5)
+    print(best)
+    pass
 
-#plt.scatter(tsne_results[:, 0], tsne_results[:, 1], c=assigned_clusters.labels_,)
-#for i, word in enumerate(words):
-#    plt.annotate(word, xy=(tsne_results[i, 0], tsne_results[i, 1]))
-#plt.show()
+
+
+# plot
+tsne = TSNE(n_components=3, perplexity=30, learning_rate=600)
+tsne_results = tsne.fit_transform(X)
+assigned_clusters, score, silhouette_score = clustering(X, 80)
+
+plt.scatter(tsne_results[:, 0], tsne_results[:, 1], c=assigned_clusters.labels_,)
+for i, word in enumerate(words):
+   plt.annotate(word, xy=(tsne_results[i, 0], tsne_results[i, 1]))
+plt.show()
 
 
 
