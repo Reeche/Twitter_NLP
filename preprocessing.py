@@ -9,6 +9,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from sklearn import cluster
 from sklearn import metrics
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 data = pd.read_csv('tweets.csv')
@@ -80,8 +81,12 @@ def clustering(data, number):
     kmeans = cluster.KMeans(n_clusters=number, init='k-means++', max_iter=100, n_init=1)
     assigned_clusters = kmeans.fit(data)
 
+
     labels = kmeans.labels_
     centroids = kmeans.cluster_centers_
+
+    for idx, label in enumerate(labels):
+        clustering[label].append(idx)
 
     # assess goodness
     silhouette_score = metrics.silhouette_score(data, labels, metric='euclidean')
@@ -116,23 +121,17 @@ def grid_search():
     #results_pd.to_csv('grid_results.csv', header=True, sep=';')
     pass
 
-def best_para():
-    results = pd.read_csv('grid_results.csv', delimiter=';')
-    results.drop(['score'], axis=1, inplace=True)
-    results.rename(columns={'Unnamed: 0': 'id'}, inplace=True)
-
-    # for each run, get the parameters with lowest silhouette score y
-    df = results.groupby(['no_components', 'perplexity', 'cluster', 'learning']).mean()
-    best = df.sort_values('silhouette').head(5)
-    print(best)
-    pass
 
 
 
 # plot
-tsne = TSNE(n_components=3, perplexity=30, learning_rate=600)
+# according to score: 2             45         5       660 looks better
+# according to sihl:  3             30         85      660
+tsne = TSNE(n_components=2, perplexity=45, learning_rate=660)
 tsne_results = tsne.fit_transform(X)
-assigned_clusters, score, silhouette_score = clustering(X, 80)
+assigned_clusters, score, silhouette_score = clustering(X, 5)
+
+
 
 plt.scatter(tsne_results[:, 0], tsne_results[:, 1], c=assigned_clusters.labels_,)
 for i, word in enumerate(words):
