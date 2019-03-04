@@ -1,39 +1,13 @@
-from __future__ import print_function
-import numpy as np
-import pandas as pd
-import nltk
 import re
-import os
-import codecs
-from sklearn import feature_extraction
-# import mpld3
-import json
-import matplotlib.pyplot as plt;
-
-plt.rcdefaults()
-import numpy as np
-import matplotlib.pyplot as plt
-import logging
-from gensim.models.doc2vec import TaggedDocument, Doc2Vec
-from nltk.tokenize import RegexpTokenizer
-from nltk.stem.porter import PorterStemmer
-import gensim
-from nltk.corpus import stopwords
-from sklearn.cluster import KMeans
-from collections import Counter
-from nltk.stem.snowball import SnowballStemmer
-import string
-from nltk.tag import pos_tag
-from gensim import corpora, models, similarities
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.externals import joblib
+from gensim import models, corpora
 from nltk import word_tokenize
+from nltk.corpus import stopwords
+import pandas as pd
 
-data = pd.read_csv('tweets.csv')
-data['text'] = data['text'].astype(str)
-data_copy = data
 
+df = pd.read_csv('tweets.csv')
+df['text'] = df['text'].astype(str)
+df = df.head(5000)
 
 def preprocessing(data):
     """
@@ -55,86 +29,51 @@ def preprocessing(data):
     # remove special characters
     data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9]+', '', item) for item in x])
 
-    # tokenize
-#    tokenizer = RegexpTokenizer(r'\w+')
-#    data['text'] = data['text'].apply(lambda x: [tokenizer.tokenize(item) for item in x])
-
     data.columns = ['ID', 'user_screen_name', 'in_reply_to_screen_name', 'text', 'retweeted_screen_name', 'party']
-    data = data.drop(['ID'], axis=1)
-    data = data['text']
 
-    return data
-
-data_cleaned = preprocessing(data)
-
-def tokenize(data):
-    a = []
-    for row in data:
-        for word in row:
-            a.append(word_tokenize(word))
-    print(a)
+    return data['text']
 
 
-data_tokenized = tokenize(data_cleaned)
+df_clean = preprocessing(df)
+data = []
+for index, row in df_clean.iteritems():
+    doc = []
+    for word in row:
+        doc.append(word)
+    data.append(doc)
 
-dictionary = corpora.Dictionary(data_tokenized)
+NUM_TOPICS = 10
 
 
+# Build a Dictionary - association word to numeric id
+dictionary = corpora.Dictionary(data)
+
+# Transform the collection of texts to a numerical form
+corpus = [dictionary.doc2bow(text) for text in data]
+
+# Have a look at how the 20th document looks like: [(word_id, count), ...]
+print(corpus[20])
+
+# Build the LDA model
+lda_model = models.LdaModel(corpus=corpus, num_topics=NUM_TOPICS, id2word=dictionary)
+
+# Build the LSI model# Build the LSI model
+lsi_model = models.LsiModel(corpus=corpus, num_topics=NUM_TOPICS, id2word=dictionary)
+
+print("LDA Model:")
+
+for idx in range(NUM_TOPICS):
+    # Print the first 10 most representative topics
+    print("Topic #%s:" % idx, lda_model.print_topic(idx, 10))
+
+print("=" * 20)
+
+print("LSI Model:")
+
+for idx in range(NUM_TOPICS):
+    # Print the first 10 most representative topics
+    print("Topic #%s:" % idx, lsi_model.print_topic(idx, 10))
+
+print("=" * 20)
 
 
-#
-# # tokenize
-#     tokenizer = RegexpTokenizer(r'\w+')
-#     data['text'] = data['text'].apply(lambda x: [tokenizer.tokenize(item) for item in x])
-#
-#
-#
-#
-#
-# def bagofwords(data):
-#     bag = []
-#     for tw in range(0, len(data['text'])):
-#         bag += data['text'][tw]
-#     return bag
-#
-#
-# data_cleaned = bagofwords(preprocessing(data))
-#
-# #print(data_cleaned[33])
-# result = []
-# for i in range(0, len(data_cleaned)):
-#     try:
-#         result.append(data_cleaned[i][0])
-#     except:
-#         print('Empty list')
-# #print(result)
-#
-# def read_corpus(data, tokens_only=False):
-#     for i, line in enumerate(data):
-#         if tokens_only:
-#             yield gensim.utils.simple_preprocess(line)
-#         else:
-#             # For training data, add tags
-#             yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line)[i])
-#
-#
-# train_corpus = list(read_corpus(result, tokens_only=False))
-# print(train_corpus)
-#
-#
-# model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
-# model.build_vocab(train_corpus)
-#
-#
-# # model = Word2Vec(bagofwords(data), min_count=100)
-# words = list(model.wv.vocab)
-#
-# X = model[model.wv.vocab]
-#
-# num_clusters = 15
-# km = KMeans(n_clusters=num_clusters, random_state=42)
-#
-# km.fit(X)
-#
-# clusters = km.labels_().tolist()
-# print(clusters)
