@@ -10,7 +10,6 @@ from sklearn import feature_extraction
 import json
 import matplotlib.pyplot as plt;
 
-plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
@@ -31,7 +30,6 @@ from sklearn.externals import joblib
 
 data = pd.read_csv('tweets.csv')
 data['text'] = data['text'].astype(str)
-data_copy = data
 
 
 def preprocessing(data):
@@ -64,57 +62,103 @@ def preprocessing(data):
 
     # Uncomment following line to save it as csv
     # data_copy['text'].to_csv('cleaned_tweets_only.csv', header=True, sep=';')
-    return list(data['text'])
-
-
-
+    return data['text']
 
 
 
 def bagofwords(data):
     bag = []
-    for tw in range(0, len(data['text'])):
-        bag += data['text'][tw]
+    for tw in range(0, len(data)):
+        bag += data[tw]
     return bag
 
 
-data_cleaned = bagofwords(preprocessing(data))
+data_c = bagofwords(preprocessing(data))
 
-#print(data_cleaned[33])
-result = []
-for i in range(0, len(data_cleaned)):
-    try:
-        result.append(data_cleaned[i][0])
-    except:
-        print('Empty list')
-#print(result)
-
-def read_corpus(data, tokens_only=False):
-    for i, line in enumerate(data):
-        if tokens_only:
-            yield gensim.utils.simple_preprocess(line)
-        else:
-            # For training data, add tags
-            yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line)[i])
+#data_cleaned = bagofwords(bagofwords(preprocessing(data)))
 
 
-train_corpus = list(read_corpus(result, tokens_only=False))
-print(train_corpus)
+dictionary = corpora.Dictionary(data_c)
+dictionary.filter_extremes(no_below=5, no_above=0.8)
+corpus = [dictionary.doc2bow(text) for text in data_c]
+
+#print(corpus)
+
+lda = models.LdaMulticore(corpus, num_topics=15, workers=40, id2word=dictionary, chunksize=10000, passes=1)
+
+topics_matrix = lda.show_topics(formatted=False, num_words=20)
+for i in range(0,len(topics_matrix)):
+    print("topic "+str(i)+": ")
+    for k in range(0,20):
+        print(topics_matrix[i][1][k])
+    print('\n')
 
 
-model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
-model.build_vocab(train_corpus)
+#data_list = preprocessing(data)
+#print(data_cleaned)
 
+
+#
+# result = []
+# for i in range(0, len(data_cleaned)):
+#    try:
+#        result.append(data_cleaned[i])
+#    except:
+#        print('Empty list')
+# print(result)
+# #
+# class Documents(object):
+#     def __init__(self, documents):
+#         self.documents = documents
+#
+#     def __iter__(self):
+#         for i, doc in enumerate(self.documents):
+#             yield TaggedDocument(words = doc, tags = [i])
+#
+# documents = Documents(data_cleaned)
+# #
+# # #train_corpus = list(read_corpus(data_cleaned, tokens_only=False))
+# # #print(train_corpus)
+#
+#
+# model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
+# model.build_vocab(documents)
+#
+# count = len(data_cleaned)
+# for epoch in range(0, 1):
+#     if epoch%10 == 0:
+#         print("epoch "+str(epoch))
+#     model.train(documents, total_examples=count, epochs=1)
+#     model.save('tweet-dataset.model')
+#     if epoch%10 == 0:
+#         model.alpha -= 0.002  # decrease the learning rate
+#         model.min_alpha = model.alpha  # fix the learning rate, no decay
+#
+#
+# fname = "tweet-dataset.model"
+# model = Doc2Vec.load(fname)
+#
+# vectors = []
+# print("inferring vectors")
+# duplicate_dict = {}
+# used_lines = []
+# for i, t in enumerate(data_list):
+#     duplicate_dict[t] = True
+#     used_lines.append(t)
+#     vectors.append(model.infer_vector(t))
+#
+# print("done")
 
 # model = Word2Vec(bagofwords(data), min_count=100)
-words = list(model.wv.vocab)
-
-X = model[model.wv.vocab]
-
-num_clusters = 15
-km = KMeans(n_clusters=num_clusters, random_state=42)
-
-km.fit(X)
-
-clusters = km.labels_().tolist()
-print(clusters)
+#words = list(model.wv.vocab)
+#print(words)
+#
+# X = model[model.wv.vocab]
+#
+# num_clusters = 15
+# km = KMeans(n_clusters=num_clusters, random_state=42)
+#
+# km.fit(X)
+#
+# clusters = km.labels_().tolist()
+# print(clusters)
