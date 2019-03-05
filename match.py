@@ -9,7 +9,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-data = pd.read_csv('data_lst_processed.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
+data = pd.read_csv('cleaned_tweets.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
 data['scores'] = np.nan
 
 wertung = pd.read_csv('wertung.csv', sep=";", encoding="ISO-8859-1", low_memory=False)
@@ -54,6 +54,7 @@ for index in party_count.index:
         "9": 0,
         "10": 0,
         "11": 0,
+        "12": 0,
     }
     scores = party_count.get_value(index, 'scores').replace("[", "").replace("]", "").replace(",", "").replace("{",
                                                                                                                "").replace(

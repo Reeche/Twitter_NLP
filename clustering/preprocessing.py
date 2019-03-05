@@ -3,7 +3,7 @@ import nltk
 from nltk.tokenize import RegexpTokenizer
 import re
 import matplotlib.pyplot as plt
-
+from nltk.stem.snowball import SnowballStemmer
 
 
 data = pd.read_csv('/Users/richi/Desktop/CSML/NLP/Assignment3/Part_1/tweets.csv')
@@ -28,6 +28,8 @@ def preprocessing(data):
     :param data: pandas data input
     :return: pandas without stopwords
     """
+    stemmer = SnowballStemmer("german")
+
     data['text'] = data['text'].str.lower().str.split()
 
     #stop_words = stopwords.words('german')
@@ -42,9 +44,15 @@ def preprocessing(data):
     # remove special characters
     data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9]+', '', item) for item in x])
 
+    # stemming
+    data['text'] = data['text'].apply(lambda x: [stemmer.stem(item) for item in x])
+
+    # remove empty strings
+    data['text'] = data['text'].apply(lambda x: [filter(None, data['text']) for item in x])
     # tokenize
     #tokenizer = RegexpTokenizer(r'\w+')
     #data['text'] = data['text'].apply(lambda x: [tokenizer.tokenize(item) for item in x])
+
 
     data.columns = ['ID', 'user_screen_name', 'in_reply_to_screen_name', 'text', 'retweeted_screen_name', 'party']
     data = data.drop(['ID'], axis=1)
