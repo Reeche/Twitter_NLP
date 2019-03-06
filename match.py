@@ -1,20 +1,29 @@
 import pandas as pd
 from ast import literal_eval
 import numpy as np
-
 import warnings
 
-##### script for matching tweet.csv with list of words ####
-
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
+
+# data = pd.read_csv('data_lst_processed.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
+# data['scores'] = np.nan
 
 data = pd.read_csv('cleaned_tweets.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
 data['scores'] = np.nan
 
-wertung = pd.read_csv('wertung.csv', sep=";", encoding="ISO-8859-1", low_memory=False)
+#%%
+wertung = pd.read_csv('wertung_noumlaut.csv', sep=",", encoding="ISO-8859-1", low_memory=False)
 wertung['word'] = wertung['word'].astype(str)
+df1 = wertung[['word', 'score_1']].dropna()
+df1.rename(index=str, columns={'score_1': 'scores'}, inplace=True)
+df2 = wertung[['word', 'score_2']].dropna()
+df2.rename(index=str, columns={'score_2': 'scores'}, inplace=True)
+df3 = wertung[['word', 'score_3']].dropna()
+df3.rename(index=str, columns={'score_3': 'scores'}, inplace=True)
+wertung = df1.append(df2.append(df3, ignore_index=True), ignore_index=True)
 
+#%%
 print(data.head(5))
 print(wertung.head(5))
 
@@ -25,16 +34,9 @@ for index in data.index:
         for index_ in wertung.index:
             word_ = wertung.get_value(index_, 'word')
             if word.find(word_) != -1:
-                score = wertung.get_value(index_, 'score_1')
+                score = wertung.get_value(index_, 'scores')
                 word_matched.append(score)
-                # score2 = wertung.get_value(index_, 'score_2')
-                # if score2 != 'false':
-                #     word_matched.append(score2)
-                # score3 = wertung.get_value(index_, 'score_3')
-                # if score3 != 'false':
-                #     word_matched.append(score3)
-    data.iloc[index, 7] = str(word_matched)
-
+    data.iloc[index, 6] = str(word_matched)
 
 def f(x):
     return pd.Series(dict(scores="{%s}" % ', '.join(x['scores'])))

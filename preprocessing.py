@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 from nltk.stem.snowball import SnowballStemmer
 
 
-data = pd.read_csv('/Users/richi/Desktop/CSML/NLP/Assignment3/Part_1/tweets.csv')
+data = pd.read_csv('tweets.csv')
 data['text'] = data['text'].astype(str)
-data_copy = data
+#data_copy = data.iloc[1:1000]
+#print(data_copy)
 
 
 
@@ -28,27 +29,29 @@ def preprocessing(data):
     :param data: pandas data input
     :return: pandas without stopwords
     """
-    stemmer = SnowballStemmer("german")
+    stemmer = SnowballStemmer('german')
+    print("here 1")
+    #df.loc[:, col] = df[col].apply(...)
 
     data['text'] = data['text'].str.lower().str.split()
-
+    print("here 1")
     #stop_words = stopwords.words('german')
 
     file = open('german_stopwords.txt', 'r')
     manual_stop_words = file.read()
-
+    print("here 1")
     # remove stop words
     #data['text'] = data['text'].apply(lambda x: [item for item in x if item not in stop_words])
     data['text'] = data['text'].apply(lambda x: [item for item in x if item not in manual_stop_words])
 
     # remove special characters
-    data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9]+', '', item) for item in x])
+    data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9ÄÖÜäöüß]', '', item) for item in x])
 
     # stemming
     data['text'] = data['text'].apply(lambda x: [stemmer.stem(item) for item in x])
 
-    # remove empty strings
-    data['text'] = data['text'].apply(lambda x: [filter(None, data['text']) for item in x])
+    # remove empty string
+    #data['text'] = data['text'].apply(lambda x: [filter(None, data['text']) for item in x])
     # tokenize
     #tokenizer = RegexpTokenizer(r'\w+')
     #data['text'] = data['text'].apply(lambda x: [tokenizer.tokenize(item) for item in x])
@@ -57,9 +60,10 @@ def preprocessing(data):
     data.columns = ['ID', 'user_screen_name', 'in_reply_to_screen_name', 'text', 'retweeted_screen_name', 'party']
     data = data.drop(['ID'], axis=1)
 
-
+    print("here end")
     # Uncomment following line to save it as csv
-    data.to_csv('cleaned_tweets.csv', header=True, sep=';')
+    data.to_csv('cleaned_tweets_withumlaut.csv', header=True, sep=';')
+    print("here finish")
     return data
 
 
@@ -77,4 +81,4 @@ def count_freq():
 
 
 
-preprocessing(data_copy)
+preprocessing(data)
