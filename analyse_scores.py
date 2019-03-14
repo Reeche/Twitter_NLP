@@ -3,22 +3,34 @@ import numpy as np
 from scipy.stats import chisquare, chi2_contingency
 
 #data = pd.read_csv('scores.csv', header=None)
-data = pd.read_csv('scores_normalised.csv', header = None)
+data = pd.read_csv('scores_test.csv', header = None)
 print(data)
 
+# a1 = [6, 4, 5, 10]
+# a2 = [8, 5, 3, 3]
+# a3 = [5, 4, 8, 4]
+# a4 = [4, 11, 7, 13]
+# a5 = [5, 8, 7, 6]
+# a6 = [7, 3, 5, 9]
+# dice = np.array([a1, a2, a3, a4, a5, a6])
+# print(dice)
+# print("dice results", chi2_contingency(dice))
+
 # Generally for all parties
-stats, p, dof, expected = chi2_contingency(np.array([data.iloc[:, 0], data.iloc[:, 1], data.iloc[:, 2],
-                                                     data.iloc[:, 3], data.iloc[:, 4], data.iloc[:, 5]]))
+#stats, p, dof, expected = chi2_contingency(np.array([data.iloc[:, 0]*100, data.iloc[:, 1]*100, data.iloc[:, 2]*100,
+ #                                                    data.iloc[:, 3]*100, data.iloc[:, 4]*100, data.iloc[:, 5]*100]))
+stats, p, dof, expected = chi2_contingency(np.array([data.iloc[:, 0]*100, data.iloc[:, 1]*100, data.iloc[:, 2]*100,
+                                                     data.iloc[:, 3]*100, data.iloc[:, 4]*100]))
 print("for all parties ", "stats", stats, "p-value", p, "dof", dof)
 
 ## For pairs:
-for i in range(0, 6):
-    for j in range(1, 6):
+for i in range(0, 5):
+    for j in range(1, 5):
         p1 = data.iloc[:, i]*100
         p2 = data.iloc[:, j]*100
         stats, p, dof, expected = chi2_contingency(np.array([p1, p2]))
         # stats2, p2 = chisquare(np.array([data.iloc[:, i], data.iloc[:, j]]).T)
-        print("Party 1 ", i, "Party 2 ", j, "p-value", p, "degrees of freedom", dof)
+        print("Party 1 ", i, "Party 2 ", j, "stats", stats, "p-value", p, "degrees of freedom", dof)
 
 """
 # Afd 0 - CDU 1

@@ -5,11 +5,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
-# data = pd.read_csv('data_lst_processed.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
-# data['scores'] = np.nan
-
-data = pd.read_csv('cleaned_tweets.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
+data = pd.read_csv('cleaned_tweets_withumlaut.csv', sep=";", header=0, encoding="ISO-8859-1", low_memory=False)
 data['scores'] = np.nan
 
 #%%
@@ -70,3 +66,12 @@ for index in party_count.index:
             except:
                 pass
     print(index, score_dict)
+
+""" Umlaut replaced with ae, oe, ue
+AfD {'1': 4, '2': 43, '3': 30, '4': 2, '5': 40, '6': 2, '7': 30, '8': 3, '9': 11, '10': 9, '11': 68, '12': 52}
+CDU/CSU {'1': 189, '2': 609, '3': 612, '4': 13, '5': 382, '6': 54, '7': 400, '8': 80, '9': 421, '10': 100, '11': 1570, '12': 1273}
+FDP {'1': 40, '2': 285, '3': 420, '4': 10, '5': 103, '6': 24, '7': 245, '8': 20, '9': 95, '10': 42, '11': 646, '12': 536}
+GrÃ¼ne {'1': 280, '2': 707, '3': 1571, '4': 72, '5': 358, '6': 107, '7': 510, '8': 107, '9': 272, '10': 119, '11': 2322, '12': 1848}
+Linke {'1': 164, '2': 404, '3': 667, '4': 48, '5': 220, '6': 49, '7': 285, '8': 59, '9': 132, '10': 79, '11': 1078, '12': 939}
+SPD {'1': 235, '2': 731, '3': 1548, '4': 132, '5': 471, '6': 53, '7': 490, '8': 104, '9': 404, '10': 168, '11': 2732, '12': 2144}
+"""

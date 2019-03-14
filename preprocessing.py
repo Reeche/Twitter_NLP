@@ -4,6 +4,7 @@ from nltk.tokenize import RegexpTokenizer
 import re
 import matplotlib.pyplot as plt
 from nltk.stem.snowball import SnowballStemmer
+import string
 
 
 data = pd.read_csv('tweets.csv')
@@ -30,22 +31,23 @@ def preprocessing(data):
     :return: pandas without stopwords
     """
     stemmer = SnowballStemmer('german')
-    print("here 1")
-    #df.loc[:, col] = df[col].apply(...)
 
     data['text'] = data['text'].str.lower().str.split()
-    print("here 1")
     #stop_words = stopwords.words('german')
 
     file = open('german_stopwords.txt', 'r')
     manual_stop_words = file.read()
-    print("here 1")
     # remove stop words
     #data['text'] = data['text'].apply(lambda x: [item for item in x if item not in stop_words])
     data['text'] = data['text'].apply(lambda x: [item for item in x if item not in manual_stop_words])
 
+    data['text'] = data['text'].apply(lambda x: [item.replace("ä", "ae") for item in x])
+    data['text'] = data['text'].apply(lambda x: [item.replace("ö", "oe") for item in x])
+    data['text'] = data['text'].apply(lambda x: [item.replace("ü", "ue") for item in x])
+
     # remove special characters
-    data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9ÄÖÜäöüß]', '', item) for item in x])
+    data['text'] = data['text'].apply(lambda x: [re.sub('[^A-Za-z0-9]', '', item) for item in x])
+
 
     # stemming
     data['text'] = data['text'].apply(lambda x: [stemmer.stem(item) for item in x])
@@ -67,18 +69,20 @@ def preprocessing(data):
     return data
 
 
-def count_freq():
+def count_freq(data):
     all_text = []
-    for num in range(len(data_clean['text'])):
-       all_text += data_clean['text'][num]
+    for num in range(len(data['text'])):
+       all_text += data['text'][num]
 
     fdist1 = nltk.FreqDist(all_text)
-    print(fdist1.most_common(50))
-    fdist1.plot(50, cumulative=True)
+    print(fdist1.most_common()[700:900])
+    #print(fdist1.most_common(500))
+    #fdist1.plot(50, cumulative=True)
     plt.show()
     pass
 
 
 
 
-preprocessing(data)
+data2 = preprocessing(data)
+count_freq(data2)
